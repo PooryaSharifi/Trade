@@ -164,7 +164,8 @@ def xxx(cols):
         return
     # mighty_ip = '192.168.1.52'
     # names = set(requests.get(f'http://{mighty_ip}:5000/symbols').json())
-    names = glob.glob('Symbols/*_*.csv')
+    names = glob.glob('Symbols/*.csv')
+    print(names)
     # dominant_date = [name[-14:-4] for name in names if '-' in name[-14:-4]]
     # dominant_date = max(set(dominant_date), key=dominant_date.count)
     # dominant_date = '_' + dominant_date
