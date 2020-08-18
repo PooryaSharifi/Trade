@@ -165,8 +165,10 @@ def xxx(cols):
     # mighty_ip = '192.168.1.52'
     # names = set(requests.get(f'http://{mighty_ip}:5000/symbols').json())
     names = glob.glob('Symbols/*_*.csv')
-    dominant_date = [name[-14:-4] for name in names if '-' in name[-14:-4]]
-    dominant_date = max(set(dominant_date), key=dominant_date.count)
+    # dominant_date = [name[-14:-4] for name in names if '-' in name[-14:-4]]
+    # dominant_date = max(set(dominant_date), key=dominant_date.count)
+    # dominant_date = '_' + dominant_date
+    dominant_date = ''
     print(dominant_date)
     lengths = []
     global_dates = set()
@@ -174,9 +176,9 @@ def xxx(cols):
     symbol_names = list(sorted({name[8:13] for name in names}))
     symbol_its = {symbol: i for i, symbol in enumerate(symbol_names)}
     for symbol in symbol_names:
-        if f'Symbols/{symbol}_{dominant_date}.csv' in names \
-                and f'Symbols/{symbol}_Trend_{dominant_date}.csv' in names \
-                and f'Symbols/{symbol}_Twitter_{dominant_date}.csv' in names:
+        if f'Symbols/{symbol}{dominant_date}.csv' in names \
+                and f'Symbols/{symbol}_Trend{dominant_date}.csv' in names \
+                and f'Symbols/{symbol}_Twitter{dominant_date}.csv' in names:
             t0 = time.time()
             # if not os.path.exists(f'Symbols/{symbol}_{dominant_date}.csv'):
             #     os.system(f'wget http://{mighty_ip}:5000/symbols/{symbol}_{dominant_date}.csv -O Symbols/{symbol}_{dominant_date}.csv')
@@ -184,7 +186,7 @@ def xxx(cols):
             #     os.system(f'wget http://{mighty_ip}:5000/symbols/{symbol}_Trend_{dominant_date}.csv -O Symbols/{symbol}_Trend_{dominant_date}.csv')
             # if not os.path.exists(f'Symbols/{symbol}_Twitter_{dominant_date}.csv'):
             #     os.system(f'wget http://{mighty_ip}:5000/symbols/{symbol}_Twitter_{dominant_date}.csv -O Symbols/{symbol}_Twitter_{dominant_date}.csv')
-            df = pd.read_csv(f'Symbols/{symbol}_{dominant_date}.csv')
+            df = pd.read_csv(f'Symbols/{symbol}{dominant_date}.csv')
             df = df[(df['Date'] >= '2016-01-01')]
             if len(df) >= window_size + skip and symbol != 'DRKH1':
                 df = df.interpolate(method='linear', axis=0).ffill().bfill()
@@ -196,8 +198,8 @@ def xxx(cols):
                 df['Low_Ret'] = (shift - df['Low']) / shift
                 df['High_Ret'] = (df['High'] - shift) / shift
                 df['Close_Ret'] = (df['Close'] - shift) / shift
-                trendiness(df, pd.read_csv(f'Symbols/{symbol}_Trend_{dominant_date}.csv'))
-                feeler(df, pd.read_csv(f'Symbols/{symbol}_Twitter_{dominant_date}.csv'))
+                trendiness(df, pd.read_csv(f'Symbols/{symbol}_Trend{dominant_date}.csv'))
+                feeler(df, pd.read_csv(f'Symbols/{symbol}_Twitter{dominant_date}.csv'))
                 dates = [np.float32(date.replace('-', '')[2:]) for date in df['Date']]
                 df = df[cols].values
                 x = np.stack(normalize(df[i: i + window_size, :], symbol=symbol_its[symbol], limit=window_size, date=dates[i + window_size - k - 1]) for i in range(df.shape[0] - window_size + 1))[skip:]
@@ -215,7 +217,7 @@ def xxx(cols):
     XX = []
     for symbol in symbol_names:
         t0 = time.time()
-        df = pd.read_csv(f'Symbols/{symbol}_{dominant_date}.csv')
+        df = pd.read_csv(f'Symbols/{symbol}{dominant_date}.csv')
         df = df[(df['Date'] >= '2016-01-01')]
         if len(df) >= window_size + skip and symbol != 'DRKH1':
             for date in global_dates - set(df['Date']):
@@ -228,8 +230,8 @@ def xxx(cols):
             df['Low_Ret'] = (shift - df['Low']) / shift
             df['High_Ret'] = (df['High'] - shift) / shift
             df['Close_Ret'] = (df['Close'] - shift) / shift
-            trendiness(df, pd.read_csv(f'Symbols/{symbol}_Trend_{dominant_date}.csv'))
-            feeler(df, pd.read_csv(f'Symbols/{symbol}_Twitter_{dominant_date}.csv'))
+            trendiness(df, pd.read_csv(f'Symbols/{symbol}_Trend{dominant_date}.csv'))
+            feeler(df, pd.read_csv(f'Symbols/{symbol}_Twitter{dominant_date}.csv'))
             dates = [np.float32(date.replace('-', '')[2:]) for date in df['Date']]
             df = df[cols].values
             x = np.stack(normalize(df[i: i + window_size - k, :], symbol=symbol_its[symbol], limit=window_size - k, date=dates[i + window_size - k - 1]) for i in range(df.shape[0] - window_size + k + 1))[skip:]
